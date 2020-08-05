@@ -1,0 +1,20 @@
+users_table
+username UNIQUE CHAR[100]
+password CHAR[50]
+
+tweets_table
+tweet CHAR[1000]
+joind_at TIMESTAMP
+
+tweet_like_table
+username CHAR[100]
+tweet CHAR[1000]
+
+retweets_table
+username CHAR[100]
+tweetID UNIQUE CHAR[3]
+retweet CHAR[1000]
+
+ret_like_table
+username CHAR[100]
+retweet CHAR[1000]
