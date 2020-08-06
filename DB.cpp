@@ -2,6 +2,8 @@
 #include <string>
 #include <fstream>
 #include <bits/stdc++.h> 
+#include <chrono>
+#include <ctime>
 using namespace std;
 
 void info_table();
@@ -148,20 +150,25 @@ void tweets_table(){
 
     string tweet;
     cout<<"enter tweet text: ";
+    auto start = chrono::system_clock::now();
     cin>>tweet;
+    auto end = chrono::system_clock::now();
+    time_t end_time = chrono::system_clock::to_time_t(end);
+    string time=std::ctime(&end_time);
+
 
     ifstream file("tweets_table.txt",ios::in);
 
     int id1,id2;
     string tweet1;
-    while(file>>id1>>id2){
-        getline(file,tweet1);
+    while(file>>id1>>id2>>tweet1){
+        getline(file,time);
         if(id1==tweet_id){
             nth_tweet+=1;
         }
     }
     ofstream file_tweet("tweets_table.txt",ios::app);
-    file_tweet<<tweet_id<<" "<<nth_tweet<<"    "<<tweet<<endl;
+    file_tweet<<tweet_id<<" "<<nth_tweet<<"    "<<tweet<<"    "<< time<<endl;
     display();
     
 }
@@ -185,13 +192,13 @@ void tweet_like_table(){
     }
     /////////////////////////////////////
 
-    string tweet;
+    string tweet,time1;
     int p1,p2;
     ifstream file("tweets_table.txt");
-    while(file>>p1>>p2){
-        getline(file,tweet);
+    while(file>>p1>>p2>>tweet){
+        getline(file,time1);
         if((p1==id1) && (p2==id2)){
-            like_file<<id1<<" "<<id2<<"   "<<str<<"    "<<tweet<<endl;
+            like_file<<id1<<" "<<id2<<"   "<<str<<endl;
             like_file.close();
         }
     }

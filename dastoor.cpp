@@ -8,13 +8,15 @@
 using namespace std;
 
 void info_table(string , string );
-void tweets_table();
-void tweet_like_table();
+void tweets_table(string , string );
+void tweet_like_table(string , string);
+
 void del_info();
 void update_password();
 void update_username();
-void retweets_table();
-void ret_like_table();
+
+void retweets_table(string, string ,string );
+void ret_like_table(string , string );
 bool correct_parantheses_and(string );
 int string_to_int(string );
 void display();
@@ -25,6 +27,14 @@ int main()
     return 0;
 }
 
+
+string removeSpaces(string str)  
+{ 
+    str.erase(remove(str.begin(), str.end(), ' '), str.end()); 
+    return str; 
+} 
+
+
 int string_to_int(string s){
     stringstream hi(s);
     int x = 0; 
@@ -33,15 +43,6 @@ int string_to_int(string s){
 }
 
 void display(){
-    cout<<"=======menu========"<<endl;
-    cout<<"1. for inserting on users table"<<endl;
-    cout<<"2. for inserting on tweets table"<<endl;
-    cout<<"3. for inserting on tweet_like_table"<<endl;
-    cout<<"4. for deleting info"<<endl;
-    cout<<"5. for updating password"<<endl;
-    cout<<"6. for changing username"<<endl;
-    cout<<"7. for inserting on retweets table"<<endl;
-    cout<<"8. for inserting on retweet_like_table"<<endl;
 
     //users_table     for  id username  password
     //tweets_table    for user_ id  nth_id  tweet
@@ -60,13 +61,13 @@ void display(){
         }
     }
 
-    string s="INSERT INTO <users_table> VALUES (<amir-ndr>,<9092301030>);";
+    string s="INSERT INTO users_table VALUES (amir , 11);";
 
     string table_name;
-    if(s.substr(0,6)=="INSERT"){   //if insert
+    if((s.substr(0,6)=="INSERT") && (s[s.size()-1]==';')){   //if insert
         if(s.substr(0,11)=="INSERT INTO"){
-            int start_shift=13;
-            while(s[start_shift]!='>'){
+            int start_shift=12;
+            while(s[start_shift]!=' '){
                 table_name+=s[start_shift];
                 start_shift++;
             }
@@ -81,10 +82,10 @@ void display(){
             if(c==1){     //if table name exist
 
                 int end_shift=start_shift;
-                if(s.substr(end_shift+2,6)=="VALUES"){       //if VALUES
-                    int start_par=end_shift+11;
+                if(s.substr(end_shift+1,6)=="VALUES"){       //if VALUES
+                    int start_par=end_shift+9;
 
-                    int check_parantheses=end_shift+9;
+                    int check_parantheses=end_shift+8;
                     string expr;
                     while(s[check_parantheses]!=';'){
                         expr+=s[check_parantheses];
@@ -94,15 +95,22 @@ void display(){
                     if(correct_parantheses_and(expr)){  //correct expr
 
                         vector <string> arg_in_s;  //args for line INSERT
-                        while(start_par!=s.size()){
-                            string arg;
-                            while(s[start_par]!='>'){
-                                arg+=s[start_par];
-                                start_par++;
-                            }
-                            arg_in_s.push_back(arg);
-                            start_par+=3;
+                        string ss;
+                        while(s[start_par]!=')'){
+                            ss+=s[start_par];
+                            start_par++;
                         }
+                        ss=removeSpaces(ss);
+                        cout<<ss;
+                        string delimiter = ",";
+                        size_t pos = 0;
+                        string token;
+                        while ((pos = ss.find(delimiter)) != std::string::npos) {
+                            token = ss.substr(0, pos);
+                            arg_in_s.push_back(token);
+                            ss.erase(0, pos + delimiter.length());
+                        }
+                        arg_in_s.push_back(ss);    
 
                         string table_for_parse,s1;
                         vector <string> arg_in_schema;     //field in our table
@@ -161,7 +169,7 @@ void display(){
                             for(int q=0;q<arg_in_schema.size();q++){
                                 
                                 vector <int> max_for_char;
-                                if((type_in_schema[q][0]=='C')){
+                                if((type_in_schema[q][0]=='C')){    //char
                                     string max_size;
                                     int start=type_in_schema[q].find('[');
                                     int end=type_in_schema[q].find(']');
@@ -176,12 +184,43 @@ void display(){
                                     }
 
                                 }
-
+                                else if((type_in_schema[q][0]=='B')){  //boolean
+                                    if((arg_in_s[q]=="True") || (arg_in_s[q]=="False")){
+                                        mot+=1;
+                                    }
+                                    else{
+                                        cout<<"ERROR!! BAD TYPE "<<endl;
+                                        exit(1);
+                                    }
+                                }
+                                else if((type_in_schema[q][0]=='T')){   //timestmap
+                                    continue;
+                                }
+                                else if((type_in_schema[q][0]=='I')){  //int
+                                    int qq;
+                                    for(int ch=0;ch<arg_in_s[q].size();ch++){
+                                        if((int(arg_in_s[q][ch])>=48) && (int(arg_in_s[q][ch])<=57)){
+                                            qq+=1;
+                                        }
+                                    }
+                                    if(qq==arg_in_s[q].size()){
+                                        mot+=1;
+                                    }
+                                }
 
                             }
                             
                             if(mot==arg_in_s.size()){
-                                info_table(arg_in_s[0],arg_in_s[1]);
+                                if(table_name=="users_table")
+                                    info_table(arg_in_s[0],arg_in_s[1]);
+                                else if(table_name=="tweets_table")
+                                    tweets_table(arg_in_s[0],arg_in_s[1]);
+                                else if(table_name=="tweet_like_table")
+                                    tweet_like_table(arg_in_s[0],arg_in_s[1]);
+                                else if(table_name=="retweets_table")
+                                    retweets_table(arg_in_s[0],arg_in_s[1],arg_in_s[2]);
+                                else if(table_name=="ret_like_table")
+                                    ret_like_table(arg_in_s[0],arg_in_s[1]);
                             }
                             else{
                                 cout<<"NOT MATCH WITH SCHEMA!!"<<endl;
@@ -280,18 +319,15 @@ void info_table(string username,string password){
 ofstream tweet_file("tweets_table.txt" , ios::app);    //thats for inserting the tweets
 
 ///////////////////////////////////////////////tweets table
-void tweets_table(){
+void tweets_table(string str, string tweet){
 
-    cout<<"enter username: ";
-    string str;
-    cin>>str;
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
 
     ifstream user_file("users_table.txt");
     int id,tweet_id;
@@ -304,20 +340,21 @@ void tweets_table(){
         }
     }
 
-    string tweet;
-    cout<<"enter tweet text: ";
-    auto start = chrono::system_clock::now();
-    cin>>tweet;
-    auto end = chrono::system_clock::now();
-    time_t end_time = chrono::system_clock::to_time_t(end);
-    string time=std::ctime(&end_time);
+    // string tweet;
+    // cout<<"enter tweet text: ";
+    // auto start = chrono::system_clock::now();
+    // cin>>tweet;
+    // auto end = chrono::system_clock::now();
+    // time_t end_time = chrono::system_clock::to_time_t(end);
+    // string time=std::ctime(&end_time);
 
 
     ifstream file("tweets_table.txt",ios::in);
 
     int id1,id2;
-    string tweet1;
-    while(file>>id1>>id2>>tweet1){
+    string tweet1,time;
+    while(file>>id1>>id2){
+        getline(file,tweet1);
         getline(file,time);
         if(id1==tweet_id){
             nth_tweet+=1;
@@ -325,28 +362,29 @@ void tweets_table(){
     }
     ofstream file_tweet("tweets_table.txt",ios::app);
     file_tweet<<tweet_id<<" "<<nth_tweet<<"    "<<tweet<<"    "<< time<<endl;
-    display();
     
 }
 
 ////////////////////////////////////insert likes(usernames) for every tweets
-void tweet_like_table(){
+void tweet_like_table(string str,string tweetID){
     ofstream like_file("tweet_like_table.txt",ios::app);
 
-    cout<<"enter the twitter_id (id1 id2)(separate by space): ";
-    int id1,id2;
-    cin>>id1>>id2;
+    // cout<<"enter the twitter_id (id1 id2)(separate by space): ";
+    // int id1,id2;
+    // cin>>id1>>id2;
+    int id1=int(tweetID[0]-48);
+    int id2=int(tweetID[1]-48);
 
-    cout<<"enter your username: ";
-    string str;
-    cin>>str;
+    // cout<<"enter your username: ";
+    // string str;
+    // cin>>str;
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
 
     string tweet,time1;
     int p1,p2;
@@ -354,31 +392,33 @@ void tweet_like_table(){
     while(file>>p1>>p2>>tweet){
         getline(file,time1);
         if((p1==id1) && (p2==id2)){
-            like_file<<id1<<" "<<id2<<"   "<<str<<"    "<<tweet<<endl;
+            like_file<<id1<<" "<<id2<<"   "<<str<<endl;
             like_file.close();
         }
     }
-    display();
 }
 
 ///////////////////////////////////////insert likes(usernames) for every retweets
-void ret_like_table(){
+void ret_like_table(string str, string retID){
     ofstream file("ret_like_table.txt",ios::app);
 
-    cout<<"enter your username: ";
-    string str;
-    cin>>str;
+    // cout<<"enter your username: ";
+    // string str;
+    // cin>>str;
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
 
-    cout<<"enter your retweet id (id1 id2 id3) (separate by space): ";
-    int user_id,id1,id2;
-    cin>>user_id>>id1>>id2;
+    // cout<<"enter your retweet id (id1 id2 id3) (separate by space): ";
+    // int user_id,id1,id2;
+    // cin>>user_id>>id1>>id2;
+    int user_id=int(retID[0]-48);
+    int id1=int(retID[1]-48);
+    int id2=int(retID[2]-48);
 
     string ret;
     int p0,p1,p2;
@@ -387,11 +427,10 @@ void ret_like_table(){
     while(ret_file>>p0>>p1>>p2){
         getline(ret_file,ret);
         if((p0==user_id) && (p1==id1) && (p2==id2)){
-            file<<user_id<<" "<<id1<<" "<<id2<<"    "<<str<<"    "<<ret<<endl;
+            file<<user_id<<" "<<id1<<" "<<id2<<"    "<<str<<endl;
             file.close();
         }
     }
-    display();
 }
 
 
@@ -605,24 +644,24 @@ void update_username(){
 }
 
 ///////////////////////////////////////////////////retweets_table
-void retweets_table(){
+void retweets_table(string str,string tweetID,string tweet){
     ofstream ret_file("retweets_table.txt", ios::app);
 
-    cout<<"enter your username: ";
-    string str;
-    cin>>str;
+    // cout<<"enter your username: ";
+    // string str;
+    // cin>>str;
 
-    cout<<"enter the tweet id (id1 id2)(separate by space): ";
-    int id1,id2;
-    cin>>id1>>id2;
-
-
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // cout<<"enter the tweet id (id1 id2)(separate by space): ";
+    // int id1,id2;
+    // cin>>id1>>id2;
+    int id1=int(tweetID[0]-48);
+    int id2=int(tweetID[2]-48);
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
 
     ifstream user_file("users_table.txt");
     string password,username;
@@ -636,7 +675,7 @@ void retweets_table(){
 
     ifstream tweet_file("tweets_table.txt");
     int p1,p2;
-    string tweet;
+    //string tweet;
 
     while(tweet_file>>p1>>p2){
         getline(tweet_file,tweet);
@@ -645,7 +684,6 @@ void retweets_table(){
             ret_file.close();
         }
     }
-    display();
 }
 ////////////////////////////////////////////////for checking the expr
 bool correct_parantheses_and(string expr) 
