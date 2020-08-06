@@ -8,13 +8,13 @@ joind_at TIMESTAMP
 
 tweet_like_table
 username CHAR[100]
-tweet CHAR[1000]
+tweetID CHAR[2]
 
 retweets_table
 username CHAR[100]
-tweetID UNIQUE CHAR[3]
+tweetID CHAR[2]
 retweet CHAR[1000]
 
 ret_like_table
 username CHAR[100]
-retweet CHAR[1000]
+retID CHAR[3]
