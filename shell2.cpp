@@ -23,14 +23,45 @@ int string_to_int(string );
 string removeSpaces(string );
 void display();
 void half_eq(string ,vector <int> &,vector <string> &,string );
-void expr_handling(string ,string );                      //logical expression handling
+void expr_handling(string ,string ,vector <vector<int> > &);                      //logical expression handling
 void args_func_insert(int &, string ,vector<string> &,vector <string> &, vector <int> & , vector <string> &  , vector <int> &);
+vector <int>  Union(vector <int> , vector <int> );
+vector <int>  Intersection(vector <int> , vector <int> );
 
 int main()
 {
     display();
     return 0;
 }
+
+vector <int>  Union(vector <int> vec1, vector <int> vec2) { 
+    set<int> s; 
+    for (int i = 0; i < vec1.size(); i++) 
+        s.insert(vec1[i]); 
+
+    for (int i = 0; i < vec2.size(); i++) 
+        s.insert(vec2[i]); 
+
+    vector <int> final;
+    for (auto it = s.begin(); it != s.end(); it++) 
+        final.push_back(*it);
+    return final;
+} 
+
+vector <int>  Intersection(vector <int> vec1, vector <int> vec2) { 
+    set<int> s; 
+
+    for (int i = 0; i < vec1.size(); i++) 
+        s.insert(vec1[i]); 
+    
+    vector <int> final;
+    for (int i = 0; i < vec2.size(); i++) {
+        if (s.find(vec2[i]) != s.end()) 
+            final.push_back(vec2[i]);
+    }
+    return final;      
+} 
+
 
 
 void half_eq(string arg_first,vector <int> &id_s,vector <string> &arg_in_schemas,string table_name){
@@ -271,7 +302,7 @@ void half_eq(string arg_first,vector <int> &id_s,vector <string> &arg_in_schemas
 
 
 //////////////////////////expr handling
-void expr_handling(string s,string table_name){
+void expr_handling(string s,string table_name,vector < vector<int> > & help_me_please){
 
     vector <string> arg_in_schema;
     string table_for_parse,s1;   //field in our table
@@ -338,12 +369,13 @@ void expr_handling(string s,string table_name){
         //cout<<s.substr(vec[i].first,vec[i].second-vec[i].first+1)<<"  ";
     }
 
+
     for(int i=0;i<vec_for_sub_par.size();i++){
         //cout<<vec_for_sub_par[i]<<endl;
         
         int op;
         int size_op;
-        string op_condition;
+        char op_condition;
 
         size_t f_AND=vec_for_sub_par[i].find("AND");
         size_t f_OR=vec_for_sub_par[i].find("OR");
@@ -357,22 +389,113 @@ void expr_handling(string s,string table_name){
             size_op=2;
             op_condition='o';
         }
+        else
+            op_condition='N'; //no operator
         // cout<<endl;
         // cout<<op<<"  "<<size_op;
 
-        if( (vec_for_sub_par[i][op-2]!=')') && (vec_for_sub_par[i][op+2]!='(') ){
-            string arg_first=removeSpaces(vec_for_sub_par[i].substr(1,op-1));       //separating
-            string arg_second=removeSpaces(vec_for_sub_par[i].substr(op+size_op,vec_for_sub_par[i].size()-op-size_op-1));
-            //cout<<arg_first<<"  "<<arg_second;
-
-            vector <int> id_s_first;
-            vector <int> id_s_second;
-            half_eq(arg_first,id_s_first,arg_in_schema,table_name);
-            half_eq(arg_second,id_s_second,arg_in_schema,table_name);
-
-            
+        if(op_condition=='N'){
+            int en=vec_for_sub_par[0].find(')');
+            string strr;
+            for(int w=1;w<en;w++){
+                strr+=vec_for_sub_par[0][w];
+            }
+            string st1=removeSpaces(strr);
+            vector <int> id_ss;
+            half_eq(st1,id_ss,arg_in_schema,table_name);
+            help_me_please.push_back(id_ss);
         }
+        else{
+        
+            vector <int> final;
 
+            if( (vec_for_sub_par[i][op-2]!=')') && (vec_for_sub_par[i][op+2]!='(') ){
+                string arg_first=removeSpaces(vec_for_sub_par[i].substr(1,op-1));       //separating
+                string arg_second=removeSpaces(vec_for_sub_par[i].substr(op+size_op,vec_for_sub_par[i].size()-op-size_op-1));
+                //cout<<arg_first<<"  "<<arg_second;
+
+                vector <int> id_s_first;
+                vector <int> id_s_second;
+                half_eq(arg_first,id_s_first,arg_in_schema,table_name);
+                half_eq(arg_second,id_s_second,arg_in_schema,table_name);
+
+                if(op_condition=='o'){
+                    final=Union(id_s_first,id_s_second);
+                    help_me_please.push_back(final);
+                    final.clear();
+                }
+                else if(op_condition=='a'){
+                    final=Intersection(id_s_first,id_s_second);
+                    help_me_please.push_back(final);
+                    final.clear();
+                }
+                
+            }
+            else if( (vec_for_sub_par[i][op-2]!=')') && (vec_for_sub_par[i][op+2]=='(')){
+                string arg_first=removeSpaces(vec_for_sub_par[i].substr(1,op-1));
+                vector <int> id_s_first;
+                half_eq(arg_first,id_s_first,arg_in_schema,table_name);
+
+                if(op_condition=='o'){
+                    final=Union(id_s_first,help_me_please[i-1]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                }
+                else if(op_condition=='a'){
+                    final=Intersection(id_s_first,help_me_please[i-1]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                }
+            }
+            else if( (vec_for_sub_par[i][op-2]==')') && (vec_for_sub_par[i][op+2]!='(')){
+                string arg_second=removeSpaces(vec_for_sub_par[i].substr(op+size_op,vec_for_sub_par[i].size()-op-size_op-1));
+                vector <int> id_s_first;
+                half_eq(arg_second,id_s_first,arg_in_schema,table_name);
+
+                if(op_condition=='o'){
+                    final=Union(id_s_first,help_me_please[i-1]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                }
+                else if(op_condition=='a'){
+                    final=Intersection(id_s_first,help_me_please[i-1]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                }
+            }
+            else if( (vec_for_sub_par[i][op-2]==')') && (vec_for_sub_par[i][op+2]=='(')){
+                if(op_condition=='o'){
+                    final=Union(help_me_please[i-1],help_me_please[i-2]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                    help_me_please.erase(it+i-2);
+                }
+                else if(op_condition=='a'){
+                    final=Intersection(help_me_please[i-1],help_me_please[i-2]);
+                    help_me_please.push_back(final);
+                    final.clear();
+                    vector <vector<int>>::iterator it;
+                    it=help_me_please.begin();
+                    help_me_please.erase(it+i-1);
+                    help_me_please.erase(it+i-2);
+                }
+            }
+        }    
     }
 }
 
@@ -517,7 +640,7 @@ void display(){
         }
     }
 
-    string s="SELECT FROM users_table WHERE (username=='amir' OR password=='1234');";
+    string s="SELECT FROM users_table WHERE ( password=='1234' );";
     string s8="INSERT INTO ret_like_table VALUES (amir,111);";
 
     string table_name;
@@ -621,6 +744,7 @@ void display(){
     }
     /////////////////////////////////////////////////////////////////////////////////select
     else if((s.substr(0,6)=="SELECT") && (s[s.size()-1]==';') && (s.substr(7,4)=="FROM")){
+        vector < vector<int> > help_me_please;
         int start=12;
         while(s[start]!=' '){
             table_name+=s[start];    //table name
@@ -645,7 +769,17 @@ void display(){
                     start++;
                 }
                 //cout<<expr;
-                expr_handling(expr,table_name);
+                vector <int> main_id;
+                expr_handling(expr,table_name,help_me_please);
+                for(int i=0;i<help_me_please.size();i++){
+                    for(int j=0;j<help_me_please[i].size();j++){
+                        main_id.push_back(help_me_please[i][j]);
+                    }
+                }
+                // for(int i=0;i<main_id.size();i++){
+                //     cout<<main_id[i]<<" ";
+                // }
+                
 
             }
             else{
