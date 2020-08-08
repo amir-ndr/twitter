@@ -8,10 +8,10 @@
 using namespace std;
 
 void info_table(string , string );
-void tweets_table(string , string );
+void tweets_table(string , string ,string );
 void tweet_like_table(string , string);
 
-void del_info();
+void del_info(int );
 void update_password();
 void update_username();
 
@@ -27,11 +27,34 @@ void expr_handling(string ,string ,vector <vector<int> > &);                    
 void args_func_insert(int &, string ,vector<string> &,vector <string> &, vector <int> & , vector <string> &  , vector <int> &);
 vector <int>  Union(vector <int> , vector <int> );
 vector <int>  Intersection(vector <int> , vector <int> );
+int user_to_id(string );
+
+void del_user(int );
+void del_tweet(int );
+void del_ret(int );
+void del_like_tw(int );
+void del_ret_like(int );
+
+
 
 int main()
 {
     display();
     return 0;
+}
+
+
+int user_to_id(string str){
+    ifstream user_t("users_table.txt");
+    int id;
+    int main;
+    string username,password;
+    while(user_t>>id>>username>>password){
+        if(username==str){
+            main=id;
+        }
+    }
+    return main;
 }
 
 vector <int>  Union(vector <int> vec1, vector <int> vec2) { 
@@ -133,9 +156,10 @@ void half_eq(string arg_first,vector <int> &id_s,vector <string> &arg_in_schemas
         sotoon+=1;
         ifstream tw_table("tweets_table.txt");
         int id1,id2;
-        string user,tweet;
+        string user,tweet,time;
         while(tw_table>>id1>>id2>>user){
             getline(tw_table,tweet);
+            getline(tw_table,time);
             if(equality_condition){
                 if(sotoon==1){
                     if(user==the_one_with_the_value){
@@ -547,6 +571,7 @@ void args_func_insert(int &mot, string table_name,vector<string> & arg_in_s,vect
             }
 
             else if(arg_in_schema[in_vec_field][type]!='U'){    //type is anything but UNIQUE
+                is_unique.push_back(0);
                 for(int f=type;f<arg_in_schema[in_vec_field].size();f++){
                     type_+=arg_in_schema[in_vec_field][f];
                 }
@@ -621,7 +646,19 @@ int string_to_int(string s){
     return x;
 }
 
+int dont(){
+    ifstream schemacc("schemas.txt");  //schemas
+    string line1;
+    int cc;
+    while(getline(schemacc,line1)){
+        cc+=1;
+    }
+    return cc;
+}
+
 void display(){
+
+    //cout<<dont();
 
     //users_table     for  id username  password
     //tweets_table    for user_ id  nth_id  tweet
@@ -640,8 +677,8 @@ void display(){
         }
     }
 
-    string s="SELECT FROM users_table WHERE ( password=='1234' );";
-    string s8="INSERT INTO ret_like_table VALUES (amir,111);";
+    string s="INSERT INTO users_table VALUES ( ali,455 );";
+    string s8="INSERT INTO tweets_table VALUES (amir,hello,12:30);";
 
     string table_name;
     ////////////////////////////////////////////////////////////////////////insert
@@ -705,11 +742,13 @@ void display(){
 
                         args_func_insert(mot,table_name,arg_in_s, arg_in_schema,is_unique,type_in_schema,max_for_char);
                         //cout<<mot;
+
+
                         if(mot==arg_in_s.size()){
                             if(table_name=="users_table")
                                 info_table(arg_in_s[0],arg_in_s[1]);
                             else if(table_name=="tweets_table")
-                                tweets_table(arg_in_s[0],arg_in_s[1]);
+                                tweets_table(arg_in_s[0],arg_in_s[1],arg_in_s[2]);
                             else if(table_name=="tweet_like_table")
                                 tweet_like_table(arg_in_s[0],arg_in_s[1]);
                             else if(table_name=="retweets_table")
@@ -779,31 +818,164 @@ void display(){
                 // for(int i=0;i<main_id.size();i++){
                 //     cout<<main_id[i]<<" ";
                 // }
-                
 
+                if(table_name=="users_table"){
+                    ifstream tw_user("users_table.txt");
+                    int id;
+                    string username,password;
+                    while(tw_user>>id>>username>>password){
+                        for(int i=0;i<main_id.size();i++){
+                            if(id==main_id[i]){
+                                cout<<id<<"  "<<username<<"  "<<password<<endl;
+                            }
+                        }
+                    }
+                }
+                else if(table_name=="tweets_table"){
+                    ifstream tw_tweet("tweets_table.txt");
+                    string username,tweet,time;
+                    int id1,id2;
+                    while(tw_tweet>>id1>>id2>>username){
+                        getline(tw_tweet,tweet);
+                        getline(tw_tweet,time);
+                        for(int i=0;i<main_id.size();i++){
+                            if(id1==main_id[i]){
+                                cout<<id1<<" "<<id2<<"   "<<username<<"  "<<tweet<<"  "<<time<<endl;
+                            }
+                        }
+                    }
+                }
+                else if(table_name=="retweets_talble"){
+                    ifstream tw_ret("retweets_talble.txt");
+                    int user_id,id1,id2;
+                    string username,ret;
+                    while(tw_ret>>user_id>>id1>>id2>>username){
+                        getline(tw_ret,ret);
+                        for(int i=0;i<main_id.size();i++){
+                            if(user_id==main_id[i]){
+                                cout<<user_id<<" "<<id1<<" "<<id2<<"  "<<username<<"  "<<ret<<endl;
+                            }
+                        }
+                    }
+                }
+                else if(table_name=="tweet_like_table"){
+                    ifstream tw_like("tweet_like_table.txt");
+                    int id1,id2;
+                    string username;
+                    while(tw_like>>id1>>id2>>username){
+                        for(int i=0;i<main_id.size();i++){
+                            if(user_to_id(username)==main_id[i]){
+                                cout<<id1<<" "<<id2<<" "<<username<<endl;
+                            }
+                        }
+                    }
+                }
+                else if(table_name=="ret_like_table"){
+                    ifstream ret_like("ret_like_table.txt");
+                    int id0,id1,id2;
+                    string username;
+                    while(ret_like>>id0>>id1>>id2>>username){
+                        for(int i=0;i<main_id.size();i++){
+                            if(user_to_id(username)==main_id[i]){
+                                cout<<id0<<" "<<id1<<" "<<id2<<"  "<<username<<endl;
+                            }
+                        }    
+                    }
+                }
             }
             else{
                 cout<<"SYNTAX ERROR!!"<<endl;
                 exit(1);
             }
-
         }  
         else{
             cout<<"NO TABLE WITH THIS NAME!!"<<endl;
             exit(1);
         }
     }
-    else{
-        cout<<"SYNTAX ERROR!!"<<endl;
-        exit(1);
+
+    /////////////////////////////////////////////////delete
+    else if( (s.substr(0,6)=="DELETE") && (s[s.size()-1]==';') && (s.substr(7,4)=="FROM")){
+        vector < vector<int> > help_me_please;
+        int start=12;
+        while(s[start]!=' '){
+            table_name+=s[start];    //table name
+            start++;
+        }
+        int c=0;
+        int index_table_name;      
+        for(int i=0;i<table_name_in_schema.size();i++){
+            if(table_name_in_schema[i]==table_name){
+                c+=1;
+                index_table_name=i;
+            } 
+        }   
+        string expr;
+
+        if(c==1){
+            start++;
+            if(s.substr(start,5)=="WHERE"){
+                start+=6;
+                while(s[start]!=';'){
+                    expr+=s[start];      //main expression
+                    start++;
+                }
+                //cout<<expr;
+                vector <int> main_id;
+                expr_handling(expr,table_name,help_me_please);
+                for(int i=0;i<help_me_please.size();i++){
+                    for(int j=0;j<help_me_please[i].size();j++){
+                        main_id.push_back(help_me_please[i][j]);
+                    }
+                }
+                // for(int i=0;i<main_id.size();i++){
+                //     cout<<main_id[i]<<" ";
+                // }
+                
+
+                if(table_name=="users_table"){
+                    for(int i=0;i<main_id.size();i++){
+                        del_info(main_id[i]);
+                    }
+                }
+                else if(table_name=="tweets_table"){
+                    for(int i=0;i<main_id.size();i++){
+                        del_tweet(main_id[i]);
+                    }
+                }    
+                else if(table_name=="retweets_table"){
+                    for(int i=0;i<main_id.size();i++){
+                        del_ret(main_id[i]);
+                    }
+                }
+                else if(table_name=="tweet_like_table"){
+                    for(int i=0;i<main_id.size();i++){
+                        del_like_tw(main_id[i]);
+                    }
+                }
+                else if(table_name=="ret_like_table"){
+                    for(int i=0;i<main_id.size();i++){
+                        del_ret_like(main_id[i]);
+                    }
+                }
+            }
+            else{
+                cout<<"SYNTAX ERROR!!"<<endl;
+                exit(1);
+            }
+        }
+        else{
+            cout<<"NO TABLE WITH THIS NAME!!"<<endl;
+            exit(1);
+        }
     }
+
+    ///////////////////////////////////////////update
+
 }
 
 
 int id=1;
-unordered_set <string> user_set;
-unordered_set <string> password_set;
-unordered_set <int> id_set;
 
 ////////////////////////////////////////////////////creating information table
 void info_table(string username,string password){
@@ -817,7 +989,7 @@ void info_table(string username,string password){
 ofstream tweet_file("tweets_table.txt" , ios::app);    //thats for inserting the tweets
 
 ///////////////////////////////////////////////tweets table
-void tweets_table(string str, string tweet){
+void tweets_table(string str, string tweet,string time){
 
 
     // /////////////////////////////////////error if username wasnt in our file
@@ -850,10 +1022,10 @@ void tweets_table(string str, string tweet){
     ifstream file("tweets_table.txt",ios::in);
 
     int id1,id2;
-    string tweet1,time,us;
+    string tweet1,time1,us;
     while(file>>id1>>id2>>us){
         getline(file,tweet1);
-        getline(file,time);
+        getline(file,time1);
         if(id1==tweet_id){
             nth_tweet+=1;
         }
@@ -879,7 +1051,8 @@ void tweet_like_table(string str,string tweetID){
     string tweet,time1,us;
     int p1,p2;
     ifstream file("tweets_table.txt");
-    while(file>>p1>>p2>>us>>tweet){
+    while(file>>p1>>p2>>us){
+        getline(file,tweet);
         getline(file,time1);
         if((p1==id1) && (p2==id2)){
             like_file<<id1<<" "<<id2<<"   "<<str<<endl;
@@ -917,125 +1090,122 @@ void ret_like_table(string str, string retID){
 }
 
 
-///////////////////////////////////////delete a line containing the given username
-void del_info(){
+void del_user(int user_id){
     ifstream file("users_table.txt");
-    string str;
-    cout<<"enter username: ";
-    cin>>str;
 
     ofstream temp("temp.txt");
 
-    int id,user_id;
+    int id;
     string password,username;
     while(file>>id>>username>>password){
-        if(str == username){
-            user_id=id;
+        if(user_id==id){
             continue;
         }
         else{
             temp<<id<<"    "<<username<<"          "<<password<<endl;
         }
     }
+    temp.close();
+    remove("users_table.txt");
+    rename("temp.txt","users_table.txt");
+}
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
+////////////////////////////////delete tweet
+void del_tweet(int user_id){
+    ofstream del_tweets("temp_tweets.txt");     //tweets
+    ifstream tw("tweets_table.txt");   
 
-
-    /////////////////////////////////////delete tweets and retweets of cleared user
-    else{
-        ofstream del_tweets("temp_tweets.txt");     //tweets
-        ifstream tw("tweets_table.txt");   
-
-        int p1,p2;
-        string tweet,us,time;
-        while(tw>>p1>>p2>>us){
-            getline(tw,tweet);
-            getline(tw,time);
-            if(user_id==p1){
-                continue;
-            }
-            else{
-                del_tweets<<p1<<" "<<p2<<"    "<<tweet<<endl;
-            }
+    int p1,p2;
+    string tweet,us,time;
+    while(tw>>p1>>p2>>us){
+        getline(tw,tweet);
+        getline(tw,time);
+        if(user_id==p1){
+            continue;
         }
-        del_tweets.close();
-        remove("tweets_table.txt");
-        rename("temp_tweets.txt", "tweets_table.txt");
-
-
-        ofstream del_ret("temp_ret.txt");    //retweets
-        ifstream ret("retweets_table.txt");
-
-        int e0,e1,e2;
-        string retweet,use;
-        while(ret>>e0>>e1>>e2>>use){
-            getline(ret,retweet);
-            if(user_id==e0){
-                continue;
-            }
-            else{
-                del_ret<<e0<<" "<<e1<<" "<<e2<<"    "<<use<<"    "<<retweet<<endl;
-            }
+        else{
+            del_tweets<<p1<<" "<<p2<<"    "<<us<<"    "<<tweet<<"   "<<time<<endl;
         }
-        del_ret.close();
-        remove("retweets_table.txt");
-        rename("temp_ret.txt","retweets_table.txt");
     }
-    ///////////////////////////////////////////////////////////////////////end tweets delete
+    del_tweets.close();
+    remove("tweets_table.txt");
+    rename("temp_tweets.txt", "tweets_table.txt");
+}
 
+////////////////////
+void del_ret(int user_id){
+    ofstream del_ret("temp_ret.txt");    //retweets
+    ifstream ret("retweets_table.txt");
 
-    ///////////////////////////////////////////////////delete likes of deleted user
+    int e0,e1,e2;
+    string retweet,use;
+    while(ret>>e0>>e1>>e2>>use){
+        getline(ret,retweet);
+        if(user_id==e0){
+            continue;
+        }
+        else{
+            del_ret<<e0<<" "<<e1<<" "<<e2<<"    "<<use<<"    "<<retweet<<endl;
+        }
+    }
+    del_ret.close();
+    remove("retweets_table.txt");
+    rename("temp_ret.txt","retweets_table.txt");
+}
 
+//////////////////
+void del_like_tw(int user_id){
     ofstream like_tweet_file("temp_tweet_file.txt");    //tweets_like
     ifstream tw_file("tweet_like_table.txt");
 
     int u1,u2;
-    string tw_like,user_like;
+    string user_like;
     while(tw_file>>u1>>u2>>user_like){
-        getline(tw_file,tw_like);
-        if(str==user_like){
+        if(user_id==user_to_id(user_like)){
             continue;
         }
         else{
-            like_tweet_file<<u1<<" "<<u2<<"    "<<str<<"    "<<tw_like<<endl;
+            like_tweet_file<<u1<<" "<<u2<<"    "<<user_like<<"    "<<endl;
         }
     }
     like_tweet_file.close();
     remove("tweet_like_table.txt");
     rename("temp_tweet_file.txt","tweet_like_table.txt");
+}
 
-
-
+///////////////////////////////
+void del_ret_like(int user_id){
     ofstream like_ret_file("temp_ret_file.txt");     //retweets_like
     ifstream ret_file("ret_like_table.txt");
 
     int i0,i1,i2;
-    string ret_user,ret_text;
+    string ret_user;
 
     while(ret_file>>i0>>i1>>i1>>ret_user){
-        getline(ret_file,ret_text);
-        if(str==ret_user){
+        if(user_id==user_to_id(ret_user)){
             continue;
         }
         else{
-            like_ret_file<<i0<<" "<<i1<<" "<<i2<<"    "<<str<<"    "<<ret_text<<endl;
+            like_ret_file<<i0<<" "<<i1<<" "<<i2<<"    "<<ret_user<<"    "<<endl;
         }
     }
     like_ret_file.close();
     remove("ret_like_table.txt");
     rename("temp_ret_file.txt","ret_like_table.txt");
-    ///////////////////////////////////////////////////////////end like delete
-
-
-    temp.close();
-    remove("users_table.txt");
-    rename("temp.txt","users_table.txt");
-    display();
 }
+
+
+///////////////////////////////////////delete a line containing the given username
+void del_info(int user_id){
+    
+    del_user(user_id);
+    del_tweet(user_id);
+    del_ret(user_id);
+    del_ret_like(user_id);
+    del_like_tw(user_id);
+}
+
+
 ///////////////////////////////////////////update password with given username
 void update_password(){
     ifstream file("users_table.txt");
@@ -1043,12 +1213,12 @@ void update_password(){
     cout<<"enter user u want to change its password: ";
     cin>>str;
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
     
     ofstream temp("temp.txt");
     int id;
@@ -1089,12 +1259,12 @@ void update_username(){
     cout<<"enter username u want to change : ";
     cin>>str;
 
-    /////////////////////////////////////error if username wasnt in our file
-    if(user_set.find(str)==user_set.end()){   
-        cout<<"NOT FOUND!!"<<endl;
-        display();
-    }
-    /////////////////////////////////////
+    // /////////////////////////////////////error if username wasnt in our file
+    // if(user_set.find(str)==user_set.end()){   
+    //     cout<<"NOT FOUND!!"<<endl;
+    //     display();
+    // }
+    // /////////////////////////////////////
 
     ofstream temp("temp.txt");
     int id;
@@ -1106,18 +1276,19 @@ void update_username(){
             string new_user;
             cin>>new_user;
 
-            if(user_set.find(new_user)==user_set.end()){      //duplicated username
-                user_set.insert(new_user);
-                username=new_user;
-            }
-            else{
-                while(!(user_set.find(new_user)==user_set.end())){
-                    cout<<"this username has already being used! "<<endl;
-                    cout<<"enter your username: ";
-                    cin>>new_user;
-                    username=new_user;
-                }
-            }
+            // if(user_set.find(new_user)==user_set.end()){      //duplicated username
+            //     user_set.insert(new_user);
+            //     username=new_user;
+            // }
+            // else{
+            //     while(!(user_set.find(new_user)==user_set.end())){
+            //         cout<<"this username has already being used! "<<endl;
+            //         cout<<"enter your username: ";
+            //         cin>>new_user;
+            //         username=new_user;
+            //     }
+            // }
+
         }
         temp<<id<<"    "<<username<<"          "<<password<<endl;
     }
