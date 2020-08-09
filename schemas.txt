@@ -3,8 +3,9 @@ username UNIQUE CHAR[100]
 password CHAR[50]
 
 tweets_table
+username CHAR[100]
 tweet CHAR[1000]
-joind_at TIMESTAMP
+last_insert TIMESTAMP
 
 tweet_like_table
 username CHAR[100]
