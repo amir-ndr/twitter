@@ -240,31 +240,50 @@ int main()
 
         /////////////////////////////////// show tweets
         else if(choice=="5"){
-            cout<<"hi";
+            string for_send;
+            for_send+=choice;
+
+            int send1 = send(sock, for_send.c_str(), for_send.size() + 1, 0);
+            if (send1 == -1){
+                cout << "Could not send to server!\r\n";
+                continue;
+            }
+
+            memset(buf, 0, 4096);
+            int rec = recv(sock, buf, 4096, 0);
+            if (rec == -1){
+                cout << "There was an error getting response from server\r\n";
+            }
+            else{
+                cout<<"tweets are: \n";
+                cout << endl<< string(buf, rec) << "\r\n";
+            }
         }
 
         ////////////////////////////////// show likes of a tweet
         else if(choice=="8"){
-            cout<<"holo";
+            string for_send,ID;
+            cout<<"enter the tweet ID: ";
+            cin>>ID;
+            for_send+=choice+','+ID;
+
+            int send1 = send(sock, for_send.c_str(), for_send.size() + 1, 0);
+            if (send1 == -1){
+                cout << "Could not send to server!\r\n";
+                continue;
+            }
+
+            memset(buf, 0, 4096);
+            int rec = recv(sock, buf, 4096, 0);
+            if (rec == -1){
+                cout << "There was an error getting response from server\r\n";
+            }
+            else{
+                cout<<"users are: \n";
+                cout << endl<< string(buf, rec) << "\r\n";
+            }
         }
-
-
-        // int send1 = send(sock, for_send.c_str(), for_send.size() + 1, 0);
-        // if (send1 == -1){
-        //     cout << "Could not send to server!\r\n";
-        //     continue;
-        // }
-
-        // memset(buf, 0, 4096);
-        // int rec = recv(sock, buf, 4096, 0);
-        // if (rec == -1){
-        //     cout << "There was an error getting response from server\r\n";
-        // }
-        // else{
-        //     cout << "SERVER> " << string(buf, rec) << "\r\n";
-        // }
     }
-
     close(sock);
 
     return 0;

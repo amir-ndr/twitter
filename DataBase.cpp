@@ -40,6 +40,7 @@ class shell{
     int user_to_id(string );
     int dont();
     void parse_request(vector <string> & ,string );
+    string id_to_user(int );
 
     void del_user(int );
     void del_tweet(int );
@@ -121,30 +122,35 @@ int main(){
                 vector <string> vec1;
                 p.parse_request(vec1,string(buf, 0, rec));
                 p.info_table(vec1[1],vec1[2]);
+                send(client_s, buf, rec + 1, 0);
             }
 
             else if(string(buf, 0, rec)[0]=='3'){     //tweet
                 vector <string> vec1;
                 p.parse_request(vec1,string(buf, 0, rec));
                 p.tweets_table(vec1[1],vec1[2],vec1[3]);
+                send(client_s, buf, rec + 1, 0);
             }
 
             else if(string(buf, 0, rec)[0]=='4'){     //retweet
                 vector <string> vec1;
                 p.parse_request(vec1,string(buf, 0, rec));
                 p.retweets_table(vec1[1],vec1[2],vec1[3]);
+                send(client_s, buf, rec + 1, 0);
             }
 
             else if(string(buf, 0, rec)[0]=='6'){    //like tweet
                 vector <string> vec1;
                 p.parse_request(vec1,string(buf, 0, rec));
                 p.tweet_like_table(vec1[1],vec1[2]);
+                send(client_s, buf, rec + 1, 0);
             }
 
             else if(string(buf, 0, rec)[0]=='7'){    //like retweet
                 vector <string> vec1;
                 p.parse_request(vec1,string(buf, 0, rec));
                 p.ret_like_table(vec1[1],vec1[2]);
+                send(client_s, buf, rec + 1, 0);
             }
 
             else if(string(buf, 0, rec)[0]=='9'){    //delete account
@@ -158,9 +164,61 @@ int main(){
                         p.del_info(id3);
                     }
                 }
+                send(client_s, buf, rec + 1, 0);
             }
 
-            send(client_s, buf, rec + 1, 0);
+            else if(string(buf, 0, rec)[0]=='5'){   //view
+                string tweets;
+
+                ifstream tweet_file("tweets_table.txt");
+                string t1,t2;
+                string user,tweet1,time;
+                while(tweet_file>>t1>>t2>>user){
+                    getline(tweet_file,tweet1);
+                    getline(tweet_file,time);
+                    tweets+=t1+t2+"   tweet from "+user+" : "+tweet1+"   "+time+'\n';
+                }
+
+                ifstream ret_file("retweets_table.txt");
+                string e1,e2,e3;
+                string username,retweet;
+                while(ret_file>>e1>>e2>>e3>>username){
+                    getline(ret_file,retweet);
+                    tweets+=e1+e2+e3+"   retweet from "+username+" : "+retweet+"   given from "+p.id_to_user(p.string_to_int(e2))+'\n';
+                }
+                send(client_s,tweets.c_str(),strlen(tweets.c_str()),0);
+            }
+
+            else if(string(buf, 0, rec)[0]=='8'){    //show likes
+                string user_like;
+                vector <string> vec1;
+                p.parse_request(vec1,string(buf, 0, rec));
+
+                if(vec1[1].size()==2){     //tweet_like
+                    ifstream tw_like("tweet_like_table.txt");
+                    int e1,e2;
+                    string user;
+                    while(tw_like>>e1>>e2>>user){
+                        if((e1==int(vec1[1][0])-48) && (e2==int(vec1[1][1])-48) ){
+                            user_like+=user+'\n';
+                        }
+                    }
+                    
+                }
+
+                else if(vec1[1].size()==3){    //retweet like
+                    ifstream ret_like("ret_like_table.txt");
+                    int e1,e2,e3;
+                    string user;
+                    while(ret_like>>e1>>e2>>e3>>user){
+                        if((e1==int(vec1[1][0])-48) && (e2==int(vec1[1][1])-48) && (e3==int(vec1[1][2])-48)){
+                            user_like+=user+'\n';
+                        }
+                    }
+                }
+                send(client_s,user_like.c_str(),strlen(user_like.c_str()),0);
+            }
+
         }
 
         close(client_s);
@@ -180,6 +238,21 @@ int shell:: user_to_id(string str){
     }
     return main;
 }
+
+///////////////////////////////// convert id to username
+string shell:: id_to_user(int x){
+    fstream user_t("users_table.txt");
+    int id;
+    string main;
+    string username,password;
+    while(user_t>>id>>username>>password){
+        if(id==x){
+            main=username;
+        }
+    }
+    return main;
+}
+
 //////////////////////////////////////////unio two vecs
 vector <int> shell::  Union(vector <int> vec1, vector <int> vec2) { 
     set<int> s; 
@@ -967,6 +1040,10 @@ void shell:: display(){
                 // for(int i=0;i<main_id.size();i++){
                 //     cout<<main_id[i]<<" ";
                 // }
+                if(main_id.size()==0){
+                    cout<<"ID NOT FOUND!!"<<endl;
+                    display();
+                }
 
                 if(table_name=="users_table"){
                     ifstream tw_user("users_table.txt");
@@ -1080,6 +1157,10 @@ void shell:: display(){
                 // for(int i=0;i<main_id.size();i++){
                 //     cout<<main_id[i]<<" ";
                 // }
+                if(main_id.size()==0){
+                    cout<<"ID NOT FOUND!!"<<endl;
+                    display();
+                }
                 
 
                 if(table_name=="users_table"){
@@ -1157,6 +1238,12 @@ void shell:: display(){
                 // for(int i=0;i<main_id.size();i++){
                 //     cout<<main_id[i]<<" ";
                 // }
+
+                if(main_id.size()==0){
+                    cout<<"ID NOT FOUND!!"<<endl;
+                    display();
+                }
+
                 start++;
                 start+=8;
                 vector <string> arg_in_s;  //args for line INSERT
