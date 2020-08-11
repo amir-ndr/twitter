@@ -22,8 +22,8 @@ class shell{
     void tweet_like_table(string , string);
 
     void del_info(int );
-    void update_password();
-    void update_username();
+    // void update_password();
+    // void update_username();
 
     void retweets_table(string, string ,string );
     void ret_like_table(string , string );
@@ -92,11 +92,11 @@ int main(){
         memset(srv, 0, NI_MAXSERV);
     
         if (getnameinfo((sockaddr*)&client, sizeof(client), host, NI_MAXHOST, srv, NI_MAXSERV, 0) == 0){
-            cout << host << " connected on port " << srv << endl;
+            cout << host << " port " << srv << endl;
         }
         else{
             inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
-            cout << host << " connected on port " << ntohs(client.sin_port) << endl;
+            cout << host << "  port " << ntohs(client.sin_port) << endl;
         }
         close(lis);
     
@@ -112,7 +112,7 @@ int main(){
                 break;
             }
             if (rec == 0){
-                cout << "Client disconnected " << endl;
+                cout << "disconnected " << endl;
                 break;
             }
 
@@ -547,7 +547,7 @@ void shell:: expr_handling(string s,string table_name,vector < vector<int> > & h
         }
     }
 
-
+    /////////////////////////////////////algorithm of handle logical expr
     vector <pair <int,int> > vec;
     int n =s.size();
     bool is_Balanced = true;
@@ -1342,7 +1342,7 @@ void shell:: display(){
                             if(user_to_id(user)==main_id[i]){
                                 user=arg_in_s[0];
                                 id1=int(arg_in_s[1][0]-48);
-                                id1=int(arg_in_s[1][1]-48);
+                                id2=int(arg_in_s[1][1]-48);
                             }
                         }
                         temp<<id1<<" "<<id2<<"   "<<user<<endl;
@@ -1361,8 +1361,8 @@ void shell:: display(){
                             if(user_to_id(user)==main_id[i]){
                                 user=arg_in_s[0];
                                 id0=int(arg_in_s[1][0]-48);
-                                id0=int(arg_in_s[1][1]-48);
-                                id0=int(arg_in_s[1][2]-48);
+                                id1=int(arg_in_s[1][1]-48);
+                                id2=int(arg_in_s[1][2]-48);
                             }
                         }
                     }
